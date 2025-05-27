@@ -210,14 +210,12 @@ async def send_message(payload: PlayerMessage):
     game_state = await run_in_threadpool(gsm.load_game_state)
     
     # Prevent interaction if character creation is not done
-    if not game_state.get("player_data", {}).get("initial_setup_done", False) and not payload.message.startswith("/"):
-        # Allow commands like /스탯초기화 or /시작 before character creation
-        # This logic might need refinement based on exact commands available pre-setup
-        # For now, we assume character creation is a blocking step for most interactions.
-        # A more robust solution would be specific command handling or a state machine.
-         if payload.message not in ["/도움말", "/시작", "/스탯초기화"]: # Example allowed commands
-            raise HTTPException(status_code=400, detail="캐릭터 초기 설정을 먼저 완료해주세요. '/시작' 명령어를 사용하거나 스탯을 분배하세요.")
-
+    if not game_state.get("player_data", {}).get("initial_setup_done", False) and \
+       not payload.message.startswith("/"):
+        # If setup is not done, and the message is NOT a command (doesn't start with '/'), block it.
+        # All slash commands will bypass this and go to process_command.
+        # If process_command doesn't handle them, they go to Gemini.
+        raise HTTPException(status_code=400, detail="캐릭터 초기 설정을 먼저 완료해주세요. 채팅은 캐릭터 생성 후 가능합니다. '/시작' 또는 '/도움말' 명령어를 사용하거나, UI에서 'Character Creation' 버튼을 눌러 스탯을 분배하세요.")
 
     game_state["game_turn"] = game_state.get("game_turn", 0) + 1
     player_input = payload.message
