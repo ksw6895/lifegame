@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life RPG - Web Version</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-container">
+        <div id="left-panel">
+            <div id="chat-display">
+                <!-- Messages will be added here by JavaScript -->
+            </div>
+            <div id="input-area">
+                <input type="text" id="player-input" placeholder="Enter your message...">
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+        <div id="right-panel">
+            <div id="player-info-notebook">
+                <div id="stats-tab-content">
+                    <h3 id="player-level">Level: 1</h3>
+                    <p id="player-xp">XP: 0/100</p>
+                    <p id="player-gold">Gold: 0G</p>
+                    <p id="player-stat-points">Stat Points: 0</p>
+                    <h4>Stats:</h4>
+                    <ul id="player-stats-list">
+                        <li>힘: <span id="stat-힘">5</span></li>
+                        <li>지능: <span id="stat-지능">5</span></li>
+                        <li>의지력: <span id="stat-의지력">5</span></li>
+                        <li>체력: <span id="stat-체력">5</span></li>
+                        <li>매력: <span id="stat-매력">5</span></li>
+                    </ul>
+                </div>
+                <div id="inventory-tab-content">
+                    <h4>Inventory:</h4>
+                    <ul id="inventory-list">
+                        <!-- Inventory items will be added here -->
+                    </ul>
+                </div>
+                <div id="quests-tab-content">
+                    <h4>Active Quests:</h4>
+                    <div id="quests-list">
+                        <!-- Quests will be added here -->
+                    </div>
+                </div>
+            </div>
+            <div id="image-display-area">
+                <h4>Item Image:</h4>
+                <img id="item-image" src="#" alt="Item image will appear here" style="max-width: 300px; max-height: 300px; display: none;">
+                <p id="item-image-placeholder">No item image to display.</p>
+            </div>
+            <div id="action-buttons">
+                <button id="character-creation-button">Character Creation / View Stats</button>
+                <button id="help-button">Help</button> <!-- Functionality to be added later -->
+                <button id="reset-game-button">Reset Game</button> <!-- Functionality to be added later -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Character Creation Modal -->
+    <div id="character-creation-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-button" id="close-modal-button">&times;</span>
+            <h2>Character Creation</h2>
+            <p>Allocate 25 points across 5 stats. Each stat min 1, max 15.</p>
+            
+            <div class="stat-input-group">
+                <div>
+                    <label for="stat-힘-input">힘:</label>
+                    <input type="number" id="stat-힘-input" value="5" min="1" max="15" data-stat-name="힘">
+                    <span id="stat-힘-value">5</span>
+                </div>
+                <div>
+                    <label for="stat-지능-input">지능:</label>
+                    <input type="number" id="stat-지능-input" value="5" min="1" max="15" data-stat-name="지능">
+                    <span id="stat-지능-value">5</span>
+                </div>
+                <div>
+                    <label for="stat-의지력-input">의지력:</label>
+                    <input type="number" id="stat-의지력-input" value="5" min="1" max="15" data-stat-name="의지력">
+                    <span id="stat-의지력-value">5</span>
+                </div>
+                <div>
+                    <label for="stat-체력-input">체력:</label>
+                    <input type="number" id="stat-체력-input" value="5" min="1" max="15" data-stat-name="체력">
+                    <span id="stat-체력-value">5</span>
+                </div>
+                <div>
+                    <label for="stat-매력-input">매력:</label>
+                    <input type="number" id="stat-매력-input" value="5" min="1" max="15" data-stat-name="매력">
+                    <span id="stat-매력-value">5</span>
+                </div>
+            </div>
+            
+            <p>Remaining Points: <span id="remaining-points">0</span></p>
+            <p id="modal-error-message" class="error-message" style="display:none;"></p>
+
+            <!-- Preset buttons (optional, can be added later)
+            <div id="preset-buttons">
+                <button data-preset="balanced">Balanced (All 5s)</button>
+                <button data-preset="intellectual">Intellectual (High Int)</button>
+            </div>
+            -->
+            
+            <button id="confirm-creation-button">Create Character</button>
+        </div>
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
