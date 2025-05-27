@@ -3,28 +3,23 @@
     "builds": [
         {
             "src": "backend/main.py",
-            "use": "@vercel/python",
-            "config": {
-                "maxLambdaSize": "45mb"
-            }
+            "use": "@vercel/python"
         },
         {
-            "src": "frontend",  
+            "src": "frontend", // frontend 디렉토리를 static 빌드의 소스로 지정
             "use": "@vercel/static"
         }
     ],
     "routes": [
         {
             "src": "/api/(.*)",
-            "dest": "backend/main.py"
+            "dest": "/backend/main.py"
         },
         {
-            "src": "/(.*\\.(?:js|css|png|jpg|svg|ico|json|txt|map))", 
-            "dest": "/frontend/$1"  
-        },
-        {
+            // 루트 경로(/)를 포함한 모든 경로를 /index.html 로 연결
+            // @vercel/static 빌더가 frontend/index.html을 빌드 결과물 루트의 index.html로 만들기 때문
             "src": "/(.*)",
-            "dest": "/frontend/index.html" 
+            "dest": "/index.html"
         }
     ]
 }
