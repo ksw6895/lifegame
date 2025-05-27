@@ -6,7 +6,7 @@
             "use": "@vercel/python"
         },
         {
-            "src": "frontend", // frontend 디렉토리를 static 빌드의 소스로 지정
+            "src": "frontend",
             "use": "@vercel/static"
         }
     ],
@@ -16,8 +16,6 @@
             "dest": "/backend/main.py"
         },
         {
-            // 루트 경로(/)를 포함한 모든 경로를 /index.html 로 연결
-            // @vercel/static 빌더가 frontend/index.html을 빌드 결과물 루트의 index.html로 만들기 때문
             "src": "/(.*)",
             "dest": "/index.html"
         }
