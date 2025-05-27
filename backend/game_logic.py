@@ -2,8 +2,10 @@
 import re
 import random
 
-def parse_gm_response_for_updates(response_text, player_data):
+def parse_gm_response_for_updates(response_text, player_data, game_state):
     """GM 응답에서 Gemini 태그 기반으로 게임 상태 변경 사항을 파싱합니다."""
+    # player_data is game_state["player_data"]
+    # game_state is available if other parts of it are needed in the future.
     updates = []
     
     print(f"[DEBUG] Gemini 태그 파싱 시작...")
@@ -154,8 +156,10 @@ def parse_natural_language_stats(user_input):
     
     return found_stats
 
-def process_command(user_input, player_data):
+def process_command(user_input, player_data, game_state):
     """사용자 명령어를 처리합니다."""
+    # player_data is game_state["player_data"]
+    # game_state is available if other parts of it are needed in the future.
     command = user_input.lower().strip()
     
     # 자연어 능력치 설정 감지
@@ -302,8 +306,10 @@ def generate_random_quest(difficulty="normal"):
     quests = quest_templates.get(difficulty, quest_templates["normal"])
     return random.choice(quests)
 
-def check_achievements(player_data):
+def check_achievements(player_data, game_state):
     """업적 달성 여부를 확인합니다."""
+    # player_data is game_state["player_data"]
+    # game_state is available if other parts of it are needed in the future.
     new_achievements = []
     
     # 레벨 기반 업적
