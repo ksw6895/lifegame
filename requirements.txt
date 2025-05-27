@@ -1,0 +1,7 @@
+google-genai>=1.16.1
+python-dotenv>=1.0.0
+pillow>=10.0.0
+requests>=2.31.0
+
+# 주의: google-generativeai와 google-genai는 충돌하므로 동시 설치 금지
+# google-genai만 사용할 것
