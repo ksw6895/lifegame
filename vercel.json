@@ -3,10 +3,7 @@
     "builds": [
         {
             "src": "backend/main.py",
-            "use": "@vercel/python",
-            "config": {
-                "maxLambdaSize": "45mb"
-            }
+            "use": "@vercel/python"
         },
         {
             "src": "frontend",
@@ -19,8 +16,12 @@
             "dest": "backend/main.py"
         },
         {
-            "src": "/(.*)",
+            "src": "/(.*\\.(?:js|css|png|jpg|svg|ico|json|txt|map))", // 정적 에셋 파일들
             "dest": "frontend/$1"
+        },
+        {
+            "src": "/(.*)", // 그 외 모든 경로 (SPA 라우팅 및 루트 경로 포함)
+            "dest": "frontend/index.html"
         }
     ]
 }
