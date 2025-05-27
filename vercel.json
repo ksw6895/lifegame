@@ -7,20 +7,12 @@
             "config": {
                 "maxLambdaSize": "45mb"
             }
-        },
-        {
-            "src": "frontend",
-            "use": "@vercel/static"
         }
     ],
     "routes": [
         {
             "src": "/api/(.*)",
             "dest": "backend/main.py"
-        },
-        {
-            "src": "/(.*\\.(?:js|css|png|jpg|svg|ico|json|txt|map))",
-            "dest": "/$1"
         },
         {
             "src": "/(.*)",
