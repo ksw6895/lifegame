@@ -2,8 +2,17 @@
     "version": 2,
     "builds": [
         {
-            "src": "backend/",
-            "use": "@vercel/python"
+            "src": "backend/main.py",
+            "use": "@vercel/python",
+            "config": {
+                "includeFiles": [
+                    "backend/config.py",
+                    "backend/game_logic.py",
+                    "backend/game_state_manager.py",
+                    "backend/gemini_client.py",
+                    "backend/openai_image_client.py"
+                ]
+            }
         },
         {
             "src": "public/index.html",
