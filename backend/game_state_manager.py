@@ -2,7 +2,7 @@
 import json
 import os
 import copy
-from vercel_kv import kv
+from vercel_kv import KV
 
 # === Vercel KV Configuration ===
 GAME_STATE_KV_KEY = "rpg_game_state_user_default"
@@ -126,7 +126,7 @@ def deserialize_history(serialized_history):
 def load_game_state():
     """게임 상태를 Vercel KV에서 로드합니다."""
     try:
-        state = kv.get(GAME_STATE_KV_KEY)
+        state = KV.get(GAME_STATE_KV_KEY)
         if state is None:
             print("KV에서 게임 상태를 찾을 수 없습니다. 새 게임을 시작합니다.")
             return copy.deepcopy(DEFAULT_GAME_STATE)
@@ -169,7 +169,7 @@ def save_game_state(state):
         if "history" in current_state_to_save:
             current_state_to_save["history"] = serialize_history(current_state_to_save["history"])
         
-        kv.set(GAME_STATE_KV_KEY, current_state_to_save)
+        KV.set(GAME_STATE_KV_KEY, current_state_to_save)
         print(f"게임 상태가 Vercel KV에 저장되었습니다. (Key: {GAME_STATE_KV_KEY})")
     except Exception as e:
         print(f"Vercel KV에 게임 상태 저장 중 오류 발생: {e}")
