@@ -3,16 +3,27 @@
     "builds": [
         {
             "src": "backend/main.py",
-            "use": "@vercel/python",
-            "config": {
-                "includeFiles": [
-                    "backend/config.py",
-                    "backend/game_logic.py",
-                    "backend/game_state_manager.py",
-                    "backend/gemini_client.py",
-                    "backend/openai_image_client.py"
-                ]
-            }
+            "use": "@vercel/python"
+        },
+        {
+            "src": "backend/config.py",
+            "use": "@vercel/python"
+        },
+        {
+            "src": "backend/game_logic.py",
+            "use": "@vercel/python"
+        },
+        {
+            "src": "backend/game_state_manager.py",
+            "use": "@vercel/python"
+        },
+        {
+            "src": "backend/gemini_client.py",
+            "use": "@vercel/python"
+        },
+        {
+            "src": "backend/openai_image_client.py",
+            "use": "@vercel/python"
         },
         {
             "src": "public/index.html",
