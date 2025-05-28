@@ -9,6 +9,11 @@ load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
+if not GEMINI_API_KEY:
+    print("WARNING: GEMINI_API_KEY is not set. Please set it in your .env file or Vercel environment variables.")
+if not OPENAI_API_KEY:
+    print("WARNING: OPENAI_API_KEY is not set. Please set it in your .env file or Vercel environment variables.")
+
 # === Gemini Model Configuration ===
 GEMINI_MODEL_NAME = "gemini-2.5-flash-preview-05-20"  # 최신 버전 (2025년 5월)
 THINKING_BUDGET = 1024  # 추론 예산 설정 (0-24576)
