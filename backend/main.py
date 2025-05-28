@@ -299,9 +299,3 @@ async def send_message(payload: PlayerMessage):
     )
 
 # --- Optional: Add more utility endpoints or WebSocket for real-time ---
-
-if __name__ == "__main__":
-    import uvicorn
-    # This is for local development. For Vercel, this part is not used.
-    # Vercel uses the `app` object directly.
-    uvicorn.run(app, host="0.0.0.0", port=8000)
