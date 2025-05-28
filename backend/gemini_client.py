@@ -1,7 +1,7 @@
 # gemini_client.py
 from google import genai
 from google.genai import types
-from config import GEMINI_API_KEY, GEMINI_MODEL_NAME, THINKING_BUDGET
+from .config import GEMINI_API_KEY, GEMINI_MODEL_NAME, THINKING_BUDGET
 
 # GM 기본 프롬프트
 BASE_GM_PROMPT = """
