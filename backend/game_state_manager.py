@@ -2,6 +2,7 @@
 import json
 import os
 import copy
+import traceback # Added import
 from vercel_kv import KV
 
 # === Vercel KV Configuration ===
@@ -124,52 +125,79 @@ def deserialize_history(serialized_history):
     return history
 
 def load_game_state():
-    """게임 상태를 Vercel KV에서 로드합니다."""
+    """게임을 Vercel KV에서 로드합니다."""
+    print(f"[LOAD_STATE_DEBUG] Attempting to load game state from Vercel KV.")
+    print(f"[LOAD_STATE_DEBUG] Using KV_KEY: {GAME_STATE_KV_KEY}")
     try:
         state = KV.get(GAME_STATE_KV_KEY)
         if state is None:
-            print("KV에서 게임 상태를 찾을 수 없습니다. 새 게임을 시작합니다.")
-            return copy.deepcopy(DEFAULT_GAME_STATE)
+            print(f"[LOAD_STATE_DEBUG] No state found in Vercel KV for key '{GAME_STATE_KV_KEY}'. Initializing new game state.")
+            default_state_copy = copy.deepcopy(DEFAULT_GAME_STATE)
+            print(f"[LOAD_STATE_DEBUG] Default state 'initial_setup_done': {default_state_copy['player_data'].get('initial_setup_done')}")
+            return default_state_copy
 
-        # 기본값 보충 (새로운 기본값이 추가되었을 경우를 대비)
+        print(f"[LOAD_STATE_DEBUG] State found in Vercel KV. Processing...")
+        # 기본값 보충
         for key, default_value in DEFAULT_GAME_STATE.items():
             if key not in state:
+                print(f"[LOAD_STATE_DEBUG] Key '{key}' missing in loaded state. Initializing with default.")
                 state[key] = copy.deepcopy(default_value)
-            # Ensure nested structures like player_data also get default补충
             elif isinstance(default_value, dict):
                 for sub_key, sub_default_value in default_value.items():
                     if sub_key not in state[key]:
+                        print(f"[LOAD_STATE_DEBUG] Sub-key '{sub_key}' in '{key}' missing. Initializing with default.")
                         state[key][sub_key] = copy.deepcopy(sub_default_value)
         
         # 플레이어 데이터 상세 보충
         current_player_data = state.get("player_data", {})
         for p_key, p_default_value in DEFAULT_PLAYER_DATA.items():
             if p_key not in current_player_data:
+                print(f"[LOAD_STATE_DEBUG] Player data key '{p_key}' missing. Initializing with default.")
                 current_player_data[p_key] = copy.deepcopy(p_default_value)
             elif isinstance(p_default_value, dict): # nested dicts in player_data (e.g. stats)
                  for stat_key, stat_default_value in p_default_value.items():
                     if stat_key not in current_player_data[p_key]:
+                         print(f"[LOAD_STATE_DEBUG] Player data sub-key '{stat_key}' in '{p_key}' missing. Initializing with default.")
                          current_player_data[p_key][stat_key] = copy.deepcopy(stat_default_value)
         state["player_data"] = current_player_data
+        print(f"[LOAD_STATE_DEBUG] Processed player_data 'initial_setup_done': {state['player_data'].get('initial_setup_done')}")
+        print(f"[LOAD_STATE_DEBUG] Processed player_stats: {state['player_data'].get('stats')}")
 
         # 히스토리 역직렬화
         if "history" in state and isinstance(state["history"], list):
+            print(f"[LOAD_STATE_DEBUG] Deserializing history. Length: {len(state['history'])}")
             state["history"] = deserialize_history(state["history"])
         
+        print(f"[LOAD_STATE_DEBUG] Game state loaded and processed successfully.")
         return state
     except Exception as e:
         print(f"Vercel KV에서 게임 상태 로드 중 오류 발생: {e}. 새 게임을 시작합니다.")
-        return copy.deepcopy(DEFAULT_GAME_STATE)
+        print(f"[LOAD_STATE_DEBUG] Error during load_game_state: {e}")
+        traceback.print_exc()
+        default_state_copy_on_error = copy.deepcopy(DEFAULT_GAME_STATE)
+        print(f"[LOAD_STATE_DEBUG] Returning default state due to error. 'initial_setup_done': {default_state_copy_on_error['player_data'].get('initial_setup_done')}")
+        return default_state_copy_on_error
 
 def save_game_state(state):
     """게임 상태를 Vercel KV에 저장합니다."""
+    print(f"[SAVE_STATE_DEBUG] Attempting to save game state to Vercel KV.")
+    if state and state.get("player_data"):
+        print(f"[SAVE_STATE_DEBUG] Player data to be saved 'initial_setup_done': {state['player_data'].get('initial_setup_done')}")
+        print(f"[SAVE_STATE_DEBUG] Player stats to be saved: {state['player_data'].get('stats')}")
+    else:
+        print(f"[SAVE_STATE_DEBUG] Player data is missing or empty in the state to be saved.")
+
     try:
-        # 히스토리 직렬화 (저장 전에 항상 수행)
-        current_state_to_save = copy.deepcopy(state) # KV에 저장하기 전에 상태 복사
+        current_state_to_save = copy.deepcopy(state)
         if "history" in current_state_to_save:
+            print(f"[SAVE_STATE_DEBUG] Serializing history before saving. Original history length: {len(current_state_to_save['history'])}")
             current_state_to_save["history"] = serialize_history(current_state_to_save["history"])
+            print(f"[SAVE_STATE_DEBUG] Serialized history length: {len(current_state_to_save['history'])}")
         
+        print(f"[SAVE_STATE_DEBUG] Calling KV.set with key: {GAME_STATE_KV_KEY}")
         KV.set(GAME_STATE_KV_KEY, current_state_to_save)
-        print(f"게임 상태가 Vercel KV에 저장되었습니다. (Key: {GAME_STATE_KV_KEY})")
+        print(f"[SAVE_STATE_DEBUG] KV.set call successful. Game state saved. (Key: {GAME_STATE_KV_KEY})")
     except Exception as e:
         print(f"Vercel KV에 게임 상태 저장 중 오류 발생: {e}")
+        print(f"[SAVE_STATE_DEBUG] Error during save_game_state: {e}")
+        traceback.print_exc()
