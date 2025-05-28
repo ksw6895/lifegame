@@ -3,7 +3,7 @@ import json
 import os
 import copy
 import traceback # Added import
-from vercel_kv import KV
+from vercel_kv import kv
 
 # === Vercel KV Configuration ===
 GAME_STATE_KV_KEY = "rpg_game_state_user_default"
@@ -129,7 +129,7 @@ def load_game_state():
     print(f"[LOAD_STATE_DEBUG] Attempting to load game state from Vercel KV.")
     print(f"[LOAD_STATE_DEBUG] Using KV_KEY: {GAME_STATE_KV_KEY}")
     try:
-        state = KV.get(GAME_STATE_KV_KEY)
+        state = kv.get(GAME_STATE_KV_KEY)
         if state is None:
             print(f"[LOAD_STATE_DEBUG] No state found in Vercel KV for key '{GAME_STATE_KV_KEY}'. Initializing new game state.")
             default_state_copy = copy.deepcopy(DEFAULT_GAME_STATE)
@@ -195,7 +195,7 @@ def save_game_state(state):
             print(f"[SAVE_STATE_DEBUG] Serialized history length: {len(current_state_to_save['history'])}")
         
         print(f"[SAVE_STATE_DEBUG] Calling KV.set with key: {GAME_STATE_KV_KEY}")
-        KV.set(GAME_STATE_KV_KEY, current_state_to_save)
+        kv.set(GAME_STATE_KV_KEY, current_state_to_save)
         print(f"[SAVE_STATE_DEBUG] KV.set call successful. Game state saved. (Key: {GAME_STATE_KV_KEY})")
     except Exception as e:
         print(f"Vercel KV에 게임 상태 저장 중 오류 발생: {e}")
