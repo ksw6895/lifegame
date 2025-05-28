@@ -6,15 +6,7 @@
             "use": "@vercel/python"
         },
         {
-            "src": "frontend/index.html",
-            "use": "@vercel/static"
-        },
-        {
-            "src": "frontend/style.css",
-            "use": "@vercel/static"
-        },
-        {
-            "src": "frontend/script.js",
+            "src": "public",
             "use": "@vercel/static"
         }
     ],
@@ -25,23 +17,23 @@
         },
         {
             "src": "/",
-            "dest": "/frontend/index.html"
+            "dest": "/index.html"
         },
         {
             "src": "/index.html",
-            "dest": "/frontend/index.html"
+            "dest": "/index.html"
         },
         {
             "src": "/style.css",
-            "dest": "/frontend/style.css"
+            "dest": "/style.css"
         },
         {
             "src": "/script.js",
-            "dest": "/frontend/script.js"
+            "dest": "/script.js"
         },
         {
-            "src": "/(.*)",
-            "dest": "/frontend/index.html" 
+            "src": "/(.*)", 
+            "dest": "/index.html" 
         }
     ]
 }
