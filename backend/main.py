@@ -305,4 +305,3 @@ if __name__ == "__main__":
     # This is for local development. For Vercel, this part is not used.
     # Vercel uses the `app` object directly.
     uvicorn.run(app, host="0.0.0.0", port=8000)
-```
