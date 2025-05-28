@@ -8,7 +8,23 @@ from vercel_kv import KV
 
 # === Vercel KV Configuration ===
 GAME_STATE_KV_KEY = "rpg_game_state_user_default"
-kv_store = KV()
+
+# Initialize kv_store, attempting to use REDIS_URL
+kv_store = None
+try:
+    redis_url = os.getenv("REDIS_URL")
+    print(f"[KV_INIT] Attempting to initialize KV store with REDIS_URL from env: {'********' if redis_url else None}") # Mask URL in logs
+    if not redis_url:
+        print("[KV_INIT_ERROR] REDIS_URL environment variable not found. Please ensure it is set in your Vercel environment.")
+        # Proceeding with redis_url=None, KV() constructor will likely raise an error if this is invalid.
+    
+    kv_store = KV(url=redis_url)
+    print("[KV_INIT] KV store initialized successfully.")
+except Exception as e:
+    print(f"[KV_INIT_ERROR] Failed to initialize KV store: {e}")
+    traceback.print_exc()
+    # Depending on recovery strategy, kv_store might remain None or a dummy/fallback could be used.
+    # For now, if it fails, operations using kv_store in load/save will fail and should be caught by their try-excepts.
 
 # === Default Game State Structures ===
 DEFAULT_PLAYER_DATA = {
