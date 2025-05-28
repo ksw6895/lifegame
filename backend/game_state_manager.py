@@ -3,10 +3,12 @@ import json
 import os
 import copy
 import traceback # Added import
-from vercel_kv import kv
+import json # Ensure json is imported
+from vercel_kv import KV
 
 # === Vercel KV Configuration ===
 GAME_STATE_KV_KEY = "rpg_game_state_user_default"
+kv_store = KV()
 
 # === Default Game State Structures ===
 DEFAULT_PLAYER_DATA = {
@@ -126,78 +128,106 @@ def deserialize_history(serialized_history):
 
 def load_game_state():
     """게임을 Vercel KV에서 로드합니다."""
-    print(f"[LOAD_STATE_DEBUG] Attempting to load game state from Vercel KV.")
-    print(f"[LOAD_STATE_DEBUG] Using KV_KEY: {GAME_STATE_KV_KEY}")
+    print(f"[LOAD_STATE] Attempting to load game state from Vercel KV. Key: {GAME_STATE_KV_KEY}")
     try:
-        state = kv.get(GAME_STATE_KV_KEY)
-        if state is None:
-            print(f"[LOAD_STATE_DEBUG] No state found in Vercel KV for key '{GAME_STATE_KV_KEY}'. Initializing new game state.")
-            default_state_copy = copy.deepcopy(DEFAULT_GAME_STATE)
-            print(f"[LOAD_STATE_DEBUG] Default state 'initial_setup_done': {default_state_copy['player_data'].get('initial_setup_done')}")
-            return default_state_copy
+        state_json_string = kv_store.get(GAME_STATE_KV_KEY)
+        print(f"[LOAD_STATE] Received from KV: {state_json_string}")
 
-        print(f"[LOAD_STATE_DEBUG] State found in Vercel KV. Processing...")
+        state = None
+        if state_json_string is None:
+            print(f"[LOAD_STATE] No state found in KV for key '{GAME_STATE_KV_KEY}'. Returning default state.")
+            return copy.deepcopy(DEFAULT_GAME_STATE)
+        
+        if isinstance(state_json_string, str):
+            try:
+                state = json.loads(state_json_string)
+                print("[LOAD_STATE] Successfully parsed JSON from KV.")
+            except json.JSONDecodeError as e:
+                print(f"[LOAD_STATE] Error parsing JSON from KV: {e}. Returning default state.")
+                traceback.print_exc()
+                return copy.deepcopy(DEFAULT_GAME_STATE)
+        elif isinstance(state_json_string, dict): # Should not happen with current KV lib version
+            print("[LOAD_STATE] Received a dict directly from KV (unexpected). Processing as is.")
+            state = state_json_string 
+        else:
+            print(f"[LOAD_STATE] Unexpected data type received from KV: {type(state_json_string)}. Returning default state.")
+            return copy.deepcopy(DEFAULT_GAME_STATE)
+
         # 기본값 보충
         for key, default_value in DEFAULT_GAME_STATE.items():
             if key not in state:
-                print(f"[LOAD_STATE_DEBUG] Key '{key}' missing in loaded state. Initializing with default.")
+                print(f"[LOAD_STATE] Key '{key}' missing in loaded state. Initializing with default.") # Changed from DEBUG
                 state[key] = copy.deepcopy(default_value)
-            elif isinstance(default_value, dict):
+            elif isinstance(default_value, dict) and isinstance(state.get(key), dict):
                 for sub_key, sub_default_value in default_value.items():
                     if sub_key not in state[key]:
-                        print(f"[LOAD_STATE_DEBUG] Sub-key '{sub_key}' in '{key}' missing. Initializing with default.")
+                        # print(f"[LOAD_STATE_DEBUG] Sub-key '{sub_key}' in '{key}' missing. Initializing with default.") # Commented out
                         state[key][sub_key] = copy.deepcopy(sub_default_value)
-        
+            elif isinstance(default_value, dict) and not isinstance(state.get(key), dict):
+                 print(f"[LOAD_STATE] Key '{key}' is not a dictionary in loaded state but should be. Re-initializing '{key}'.")
+                 state[key] = copy.deepcopy(default_value)
+
+
         # 플레이어 데이터 상세 보충
         current_player_data = state.get("player_data", {})
+        if not isinstance(current_player_data, dict): # Ensure player_data is a dict
+            print(f"[LOAD_STATE] player_data is not a dict. Resetting to default player_data.") # Changed from DEBUG
+            current_player_data = copy.deepcopy(DEFAULT_PLAYER_DATA)
+
         for p_key, p_default_value in DEFAULT_PLAYER_DATA.items():
             if p_key not in current_player_data:
-                print(f"[LOAD_STATE_DEBUG] Player data key '{p_key}' missing. Initializing with default.")
+                print(f"[LOAD_STATE] Player data key '{p_key}' missing. Initializing with default.") # Changed from DEBUG
                 current_player_data[p_key] = copy.deepcopy(p_default_value)
-            elif isinstance(p_default_value, dict): # nested dicts in player_data (e.g. stats)
-                 for stat_key, stat_default_value in p_default_value.items():
+            elif isinstance(p_default_value, dict) and isinstance(current_player_data.get(p_key), dict):
+                 # Nested player data (e.g., stats)
+                for stat_key, stat_default_value in p_default_value.items():
                     if stat_key not in current_player_data[p_key]:
-                         print(f"[LOAD_STATE_DEBUG] Player data sub-key '{stat_key}' in '{p_key}' missing. Initializing with default.")
-                         current_player_data[p_key][stat_key] = copy.deepcopy(stat_default_value)
-        state["player_data"] = current_player_data
-        print(f"[LOAD_STATE_DEBUG] Processed player_data 'initial_setup_done': {state['player_data'].get('initial_setup_done')}")
-        print(f"[LOAD_STATE_DEBUG] Processed player_stats: {state['player_data'].get('stats')}")
+                        # print(f"[LOAD_STATE_DEBUG] Player data sub-key '{stat_key}' in '{p_key}' missing. Initializing with default.") # Commented out
+                        current_player_data[p_key][stat_key] = copy.deepcopy(stat_default_value)
+            elif isinstance(p_default_value, dict) and not isinstance(current_player_data.get(p_key), dict):
+                print(f"[LOAD_STATE] Player data sub-structure '{p_key}' is not a dict but should be. Resetting.") # Changed from DEBUG
+                current_player_data[p_key] = copy.deepcopy(p_default_value)
 
-        # 히스토리 역직렬화
+        state["player_data"] = current_player_data
+        print(f"[LOAD_STATE] Processed player_data 'initial_setup_done': {state['player_data'].get('initial_setup_done')}, Stats: {state['player_data'].get('stats')}") # Changed from DEBUG and added stats
+        
         if "history" in state and isinstance(state["history"], list):
-            print(f"[LOAD_STATE_DEBUG] Deserializing history. Length: {len(state['history'])}")
+            # print(f"[LOAD_STATE_DEBUG] Deserializing history. Length: {len(state['history'])}") # Commented out, too verbose if not debugging history specifically
             state["history"] = deserialize_history(state["history"])
         
-        print(f"[LOAD_STATE_DEBUG] Game state loaded and processed successfully.")
+        print(f"[LOAD_STATE] Game state loaded and processed successfully.")
         return state
     except Exception as e:
-        print(f"Vercel KV에서 게임 상태 로드 중 오류 발생: {e}. 새 게임을 시작합니다.")
-        print(f"[LOAD_STATE_DEBUG] Error during load_game_state: {e}")
+        print(f"[LOAD_STATE] Critical error during load_game_state: {e}.")
         traceback.print_exc()
-        default_state_copy_on_error = copy.deepcopy(DEFAULT_GAME_STATE)
-        print(f"[LOAD_STATE_DEBUG] Returning default state due to error. 'initial_setup_done': {default_state_copy_on_error['player_data'].get('initial_setup_done')}")
-        return default_state_copy_on_error
+        return copy.deepcopy(DEFAULT_GAME_STATE)
 
 def save_game_state(state):
-    """게임 상태를 Vercel KV에 저장합니다."""
-    print(f"[SAVE_STATE_DEBUG] Attempting to save game state to Vercel KV.")
-    if state and state.get("player_data"):
-        print(f"[SAVE_STATE_DEBUG] Player data to be saved 'initial_setup_done': {state['player_data'].get('initial_setup_done')}")
-        print(f"[SAVE_STATE_DEBUG] Player stats to be saved: {state['player_data'].get('stats')}")
-    else:
-        print(f"[SAVE_STATE_DEBUG] Player data is missing or empty in the state to be saved.")
+    """게임을 Vercel KV에 저장합니다."""
+    print(f"[SAVE_STATE] Attempting to save game state to Vercel KV. Key: {GAME_STATE_KV_KEY}")
+    if not state or not state.get("player_data"):
+        print(f"[SAVE_STATE] Invalid or empty state provided. Aborting save.")
+        return
 
     try:
         current_state_to_save = copy.deepcopy(state)
-        if "history" in current_state_to_save:
-            print(f"[SAVE_STATE_DEBUG] Serializing history before saving. Original history length: {len(current_state_to_save['history'])}")
+        if "history" in current_state_to_save: # Ensure history is properly serialized
+            # print(f"[SAVE_STATE_DEBUG] Serializing history before saving. Original history length: {len(current_state_to_save['history'])}") # Commented out
             current_state_to_save["history"] = serialize_history(current_state_to_save["history"])
-            print(f"[SAVE_STATE_DEBUG] Serialized history length: {len(current_state_to_save['history'])}")
-        
-        print(f"[SAVE_STATE_DEBUG] Calling KV.set with key: {GAME_STATE_KV_KEY}")
-        kv.set(GAME_STATE_KV_KEY, current_state_to_save)
-        print(f"[SAVE_STATE_DEBUG] KV.set call successful. Game state saved. (Key: {GAME_STATE_KV_KEY})")
+            # print(f"[SAVE_STATE_DEBUG] Serialized history length: {len(current_state_to_save['history'])}") # Commented out
+
+        state_json_string = json.dumps(current_state_to_save)
+        print(f"[SAVE_STATE] State to be saved (JSON string): {state_json_string[:500]}...") # Log snippet
+
+        kv_store.set(GAME_STATE_KV_KEY, state_json_string)
+        print(f"[SAVE_STATE] Successfully saved game state to Vercel KV. Key: {GAME_STATE_KV_KEY}")
+
+    except json.JSONDecodeError as e: # Mistake: should be json.JSONEncodeError if any, but dumps usually errors on non-serializable types
+        print(f"[SAVE_STATE] Error serializing state to JSON: {e}")
+        traceback.print_exc()
+    except TypeError as e: # Catching TypeErrors from json.dumps for non-serializable objects
+        print(f"[SAVE_STATE] Error: Non-serializable data found in game state: {e}")
+        traceback.print_exc()
     except Exception as e:
-        print(f"Vercel KV에 게임 상태 저장 중 오류 발생: {e}")
-        print(f"[SAVE_STATE_DEBUG] Error during save_game_state: {e}")
+        print(f"[SAVE_STATE] Error saving game state to Vercel KV: {e}")
         traceback.print_exc()
