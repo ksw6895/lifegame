@@ -17,23 +17,23 @@
         },
         {
             "src": "/",
-            "dest": "/frontend/index.html"
+            "dest": "/index.html"
         },
         {
             "src": "/index.html",
-            "dest": "/frontend/index.html"
+            "dest": "/index.html"
         },
         {
             "src": "/(.+\\.css)",
-            "dest": "/frontend/$1"
+            "dest": "/$1"
         },
         {
             "src": "/(.+\\.js)",
-            "dest": "/frontend/$1"
+            "dest": "/$1"
         },
         {
             "src": "/(.*)",
-            "dest": "/frontend/index.html"
+            "dest": "/index.html"
         }
     ]
 }
