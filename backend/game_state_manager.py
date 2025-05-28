@@ -2,7 +2,6 @@
 import json
 import os
 import copy
-from config import MEMORY_FILE # Keep for now, might be removed later
 from vercel_kv import kv
 
 # === Vercel KV Configuration ===
