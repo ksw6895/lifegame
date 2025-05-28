@@ -390,7 +390,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Reset Game Button Logic ---
-    /*
     resetGameButtonEl.addEventListener('click', async () => {
         if (confirm("Are you sure you want to reset all game progress? This cannot be undone.")) {
             try {
@@ -417,7 +416,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-    */
 
     // Review and Refine UI Update Functions (already implemented with clearing and empty states)
     // updatePlayerStatsUI: Updates textContent, so implicitly clears old. Handles nullish values for defaults.
@@ -428,4 +426,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // This will be handled in the reset logic by clearing chat then calling initializeGame.
 
 });
-```
