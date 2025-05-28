@@ -4,7 +4,7 @@ import os # os.path is still used for blob pathname construction
 import hashlib
 import base64
 from vercel_blob import put, head as vercel_head
-from config import (
+from .config import (
     OPENAI_API_KEY, OPENAI_IMAGE_MODEL, OPENAI_IMAGE_API_URL,
     DEFAULT_IMAGE_SIZE, DEFAULT_NUM_IMAGES, DEFAULT_IMAGE_QUALITY
     # IMAGE_CACHE_DIR is removed as it's no longer used
